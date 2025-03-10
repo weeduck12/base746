@@ -59,6 +59,10 @@ void setup()
 
     lv_init();
 
+    lv_log_register_print_cb([](lv_log_level_t level, const char *buf) {
+        Serial.printf("%s", buf);
+    });
+
     lv_display_t *display = lv_display_create(480, 272);
 
     lv_display_set_flush_cb(display, my_flush_cb);
