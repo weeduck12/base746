@@ -1,6 +1,7 @@
 #include <unistd.h>
 #define SDL_MAIN_HANDLED        /*To fix SDL's "undefined reference to WinMain" issue*/
 #include <SDL2/SDL.h>
+#include "drivers/sdl/lv_sdl_window.h"
 #include "drivers/sdl/lv_sdl_mouse.h"
 #include "drivers/sdl/lv_sdl_mousewheel.h"
 #include "drivers/sdl/lv_sdl_keyboard.h"
@@ -40,6 +41,8 @@ void hal_setup(void)
 
 
     lvDisplay = lv_sdl_window_create(SDL_HOR_RES, SDL_VER_RES);
+    lv_sdl_window_set_zoom(lvDisplay, SDL_ZOOM);
+
     lvMouse = lv_sdl_mouse_create();
     lvMouseWheel = lv_sdl_mousewheel_create();
     lvKeyboard = lv_sdl_keyboard_create();

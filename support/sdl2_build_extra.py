@@ -1,4 +1,7 @@
 Import("env", "projenv")
+import shutil
+import os
+import sys
 
 for e in [ env, projenv ]:
     # If compiler uses `-m32`, propagate it to linker.
@@ -11,6 +14,10 @@ exec_name = "${BUILD_DIR}/${PROGNAME}${PROGSUFFIX}"
 # Override unused "upload" to execute compiled binary
 from SCons.Script import AlwaysBuild
 AlwaysBuild(env.Alias("upload", exec_name, exec_name))
+
+if sys.platform.startswith("win"):
+    print("Copying SDL2.dll to build directory")
+    shutil.copy(os.getcwd() + "/w64devkit/x86_64-w64-mingw32/bin/SDL2.dll", os.getcwd() + "/.pio/build/emulator_64bits")
 
 # Add custom target to explorer
 env.AddTarget(

@@ -82,7 +82,7 @@ void myTask(void *pvParameters)
 
 int main(void)
 {
-  printf("Emulateur LVGL\n");
+  printf("LVGL Simulator\n");
   fflush(stdout);
 
   lv_init();

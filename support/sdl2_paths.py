@@ -19,7 +19,8 @@ if sys.platform.startswith("darwin"):
         )
 
 if sys.platform.startswith("win"):
-    os.environ["path"] += "C:/Program Files/CodeBlocks/MinGW/bin"
+    mingwPath = os.getcwd() + "/w64devkit/bin"
+    os.environ["path"] = mingwPath + ";" + os.environ["path"]
 
 #breakpoint()
     
