@@ -17,11 +17,13 @@ if sys.platform.startswith("darwin"):
         env.Append(
             LIBPATH=os.path.dirname(sdl_lib[0])
         )
-    
-    
+
+if sys.platform.startswith("win"):
+    os.environ["path"] += "C:/Program Files/CodeBlocks/MinGW/bin"
+
 #breakpoint()
     
-#print('NewENV=====================================')
-#print(env.Dump())
-#print('DefaultENV=====================================')
-#print(DefaultEnvironment().Dump())
+# print('NewENV=====================================')
+# print(env.Dump())
+# print('DefaultENV=====================================')
+# print(DefaultEnvironment().Dump())
