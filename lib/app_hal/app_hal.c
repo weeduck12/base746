@@ -39,8 +39,12 @@ void hal_setup(void)
     /* Add a display
      * Use the 'monitor' driver which creates window on PC's monitor to simulate a display*/
 
-
-    lvDisplay = lv_sdl_window_create(SDL_HOR_RES*SDL_ZOOM, SDL_VER_RES*SDL_ZOOM);
+    #ifdef WIN32
+        lvDisplay = lv_sdl_window_create(SDL_HOR_RES, SDL_VER_RES);
+    #else
+        lvDisplay = lv_sdl_window_create(SDL_HOR_RES*SDL_ZOOM, SDL_VER_RES*SDL_ZOOM);
+    #endif
+    
     lv_sdl_window_set_zoom(lvDisplay, SDL_ZOOM);
 
     lvMouse = lv_sdl_mouse_create();
