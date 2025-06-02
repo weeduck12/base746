@@ -1,5 +1,8 @@
 #include "lvgl.h"
-
+#include <Arduino.h>
+#define PULSE  4
+#define DIR 6 
+#define ENABLE 5
 static void event_handler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -37,6 +40,18 @@ void testLvgl()
   lv_obj_center(label);
 }
 
+
+void testMot(int steps, bool direction){
+    digitalWrite(ENABLE, LOW); // Active le driver
+    digitalWrite(DIR, direction ? HIGH : LOW); // Prend en compte le sens
+    for(int i = 0; i < steps; i++){
+        digitalWrite(PULSE, HIGH);
+        delayMicroseconds(1000); // Ajuster pour la vitesse
+        digitalWrite(PULSE, LOW);
+        delayMicroseconds(1000);
+    }
+}
+
 #ifdef ARDUINO
 
 #include "lvglDrivers.h"
@@ -48,13 +63,20 @@ void mySetup()
 {
   // à décommenter pour tester la démo
   // lv_demo_widgets();
-
+  pinMode(PULSE, OUTPUT);
+  pinMode(PULSE, OUTPUT);
+  pinMode(ENABLE, OUTPUT);
   // Initialisations générales
-  testLvgl();
+  //testLvgl();
+
 }
 
 void loop()
 {
+  testMot(200, false);
+  delayMicroseconds(1000);
+  testMot(200, true);
+  delayMicroseconds(1000);
   // Inactif (pour mise en veille du processeur)
 }
 
