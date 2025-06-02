@@ -41,14 +41,14 @@ void testLvgl()
 }
 
 
-void testMot(int steps, bool direction){
+void testMot(int steps, bool direction, int delai = 2000){
     digitalWrite(ENABLE, LOW); // Active le driver
     digitalWrite(DIR, direction ? HIGH : LOW); // Prend en compte le sens
     for(int i = 0; i < steps; i++){
         digitalWrite(PULSE, HIGH);
-        delayMicroseconds(1000); // Ajuster pour la vitesse
+        delayMicroseconds(delai); // Ajuster pour la vitesse
         digitalWrite(PULSE, LOW);
-        delayMicroseconds(1000);
+        delayMicroseconds(delai);
     }
 }
 
