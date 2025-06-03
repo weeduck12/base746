@@ -57,7 +57,7 @@ void mySetup()
   pinMode(PULSE, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(ENABLE, OUTPUT);
-  digitalWrite(ENABLE, HIGH);
+  digitalWrite(ENABLE, LOW);
   digitalWrite(DIR, HIGH);
   // Initialisations générales
   testLvgl();
@@ -85,6 +85,7 @@ void myTask(void *pvParameters)
   while (1)
   {
     // Loop
+    if()
     digitalWrite(PULSE,etat);
     etat = !etat;
     // Endort la tâche pendant le temps restant par rapport au réveil,
