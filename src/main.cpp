@@ -1,6 +1,6 @@
 #include "lvgl.h"
 #include <Arduino.h>
-#define PULSE  4
+#define PULSE  8
 #define DIR 6 
 #define ENABLE 5
 static void event_handler(lv_event_t * e)
@@ -23,10 +23,11 @@ void testLvgl()
   lv_obj_t * btn1 = lv_button_create(lv_screen_active());
   lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
   lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
-  lv_obj_remove_flag(btn1, LV_OBJ_FLAG_PRESS_LOCK);
+  lv_obj_add_flag(btn1, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_set_height(btn1, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn1);
-  lv_label_set_text(label, "Button");
+  lv_label_set_text(label, "Sens horloge ");
   lv_obj_center(label);
 
   lv_obj_t * btn2 = lv_button_create(lv_screen_active());
@@ -36,21 +37,11 @@ void testLvgl()
   lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn2);
-  lv_label_set_text(label, "Toggle");
+  lv_label_set_text(label, "Sens inverse");
   lv_obj_center(label);
 }
 
 
-void testMot(int steps, bool direction, int delai = 2000){
-    digitalWrite(ENABLE, LOW); // Active le driver
-    digitalWrite(DIR, direction ? HIGH : LOW); // Prend en compte le sens
-    for(int i = 0; i < steps; i++){
-        digitalWrite(PULSE, HIGH);
-        delayMicroseconds(delai); // Ajuster pour la vitesse
-        digitalWrite(PULSE, LOW);
-        delayMicroseconds(delai);
-    }
-}
 
 #ifdef ARDUINO
 
@@ -64,19 +55,23 @@ void mySetup()
   // à décommenter pour tester la démo
   // lv_demo_widgets();
   pinMode(PULSE, OUTPUT);
-  pinMode(PULSE, OUTPUT);
+  pinMode(DIR, OUTPUT);
   pinMode(ENABLE, OUTPUT);
+  digitalWrite(ENABLE, HIGH);
+  digitalWrite(DIR, HIGH);
   // Initialisations générales
-  //testLvgl();
+  testLvgl();
 
 }
 
 void loop()
 {
-  testMot(200, false);
-  delayMicroseconds(1000);
-  testMot(200, true);
-  delayMicroseconds(1000);
+  
+  // digitalWrite(PULSE,HIGH);
+  // delayMicroseconds(500);
+  // digitalWrite(PULSE, LOW);
+  // delayMicroseconds(500);
+
   // Inactif (pour mise en veille du processeur)
 }
 
@@ -86,13 +81,15 @@ void myTask(void *pvParameters)
   TickType_t xLastWakeTime;
   // Lecture du nombre de ticks quand la tâche débute
   xLastWakeTime = xTaskGetTickCount();
+  int etat = 0;
   while (1)
   {
     // Loop
-
+    digitalWrite(PULSE,etat);
+    etat = !etat;
     // Endort la tâche pendant le temps restant par rapport au réveil,
     // ici 200ms, donc la tâche s'effectue toutes les 200ms
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(200)); // toutes les 200 ms
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(500)); // toutes les 200 ms
   }
 }
 
