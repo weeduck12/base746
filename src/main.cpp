@@ -14,14 +14,24 @@ static void event_handler(lv_event_t * e)
         LV_LOG_USER("Toggled");
     }
 }
+/*
+lv_obj_t * SensText;
+  lv_obj_t * boutonSense = lv_button_create(lv_screen_active());
+  lv_obj_add_event_cb(boutonSense, event_handler, LV_EVENT_ALL, NULL);
+  lv_obj_align(boutonSense, LV_ALIGN_CENTER, 0, -40);
+  lv_obj_add_flag(boutonSense, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_set_height(boutonSense, LV_SIZE_CONTENT);
 
+SensText = lv_label_create(boutonSense);
+lv_label_set_text(label,"Sens Horaire");
+*/
 void testLvgl()
 {
   // Initialisations générales
   lv_obj_t * label;
 
   lv_obj_t * btn1 = lv_button_create(lv_screen_active());
-  lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_ALL, NULL);
+  lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_CLICKED, NULL);
   lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
   lv_obj_add_flag(btn1, LV_OBJ_FLAG_CHECKABLE);
   lv_obj_set_height(btn1, LV_SIZE_CONTENT);
@@ -37,8 +47,10 @@ void testLvgl()
   lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn2);
-  lv_label_set_text(label, "Sens inverse");
+  lv_label_set_text(label, "Sens antihorloge");
   lv_obj_center(label);
+
+
 }
 
 
@@ -85,7 +97,6 @@ void myTask(void *pvParameters)
   while (1)
   {
     // Loop
-    if()
     digitalWrite(PULSE,etat);
     etat = !etat;
     // Endort la tâche pendant le temps restant par rapport au réveil,
