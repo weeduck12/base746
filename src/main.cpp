@@ -3,57 +3,74 @@
 #define PULSE  8
 #define DIR 6 
 #define ENABLE 5
-static void event_handler(lv_event_t * e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
 
-    if(code == LV_EVENT_CLICKED) {
-        LV_LOG_USER("Clicked");
+volatile int etat_moteur = 0;
+int val_slide = 200;
+ void event_handler_btn1(lv_event_t * e)
+{
+    lv_obj_t * btn = (lv_obj_t *)lv_event_get_target(e);
+
+    if(lv_obj_has_state(btn, LV_STATE_CHECKED)) {
+      etat_moteur = 1;
+
     }
-    else if(code == LV_EVENT_VALUE_CHANGED) {
-        LV_LOG_USER("Toggled");
+    else{
+      etat_moteur = 0;
     }
 }
-/*
-lv_obj_t * SensText;
-  lv_obj_t * boutonSense = lv_button_create(lv_screen_active());
-  lv_obj_add_event_cb(boutonSense, event_handler, LV_EVENT_ALL, NULL);
-  lv_obj_align(boutonSense, LV_ALIGN_CENTER, 0, -40);
-  lv_obj_add_flag(boutonSense, LV_OBJ_FLAG_CHECKABLE);
-  lv_obj_set_height(boutonSense, LV_SIZE_CONTENT);
 
-SensText = lv_label_create(boutonSense);
-lv_label_set_text(label,"Sens Horaire");
-*/
+ void event_handler_btn2(lv_event_t * e)
+{
+    lv_obj_t * btn = (lv_obj_t *)lv_event_get_target(e);
+
+    if(lv_obj_has_state(btn, LV_STATE_CHECKED)) {
+        etat_moteur = 2; // Sens antihoraire
+    } else {
+        etat_moteur = 0; // Stop si décoché
+    }
+}
+
+void event_handler_slide(lv_event_t * e)
+{
+    lv_obj_t * slide = (lv_obj_t *)lv_event_get_target(e);
+    val_slide = lv_slider_get_value(slide) + 200;
+}
+
 void testLvgl()
 {
   // Initialisations générales
   lv_obj_t * label;
-
+  // bouton 1 
   lv_obj_t * btn1 = lv_button_create(lv_screen_active());
-  lv_obj_add_event_cb(btn1, event_handler, LV_EVENT_CLICKED, NULL);
-  lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -40);
+  lv_obj_add_event_cb(btn1, event_handler_btn1, LV_EVENT_CLICKED, NULL);
+  lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -70);
   lv_obj_add_flag(btn1, LV_OBJ_FLAG_CHECKABLE);
   lv_obj_set_height(btn1, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn1);
-  lv_label_set_text(label, "Sens horloge ");
+  lv_label_set_text(label, "Sens antihoraire ");
   lv_obj_center(label);
-
+  
+  // bouton 2
   lv_obj_t * btn2 = lv_button_create(lv_screen_active());
-  lv_obj_add_event_cb(btn2, event_handler, LV_EVENT_ALL, NULL);
-  lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 40);
+  lv_obj_add_event_cb(btn2, event_handler_btn2, LV_EVENT_CLICKED, NULL);
+  lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 30);
   lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
   lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn2);
-  lv_label_set_text(label, "Sens antihorloge");
+  lv_label_set_text(label, "Sens horaire");
   lv_obj_center(label);
 
-
+  //slider
+  
+  lv_obj_t * slide = lv_slider_create(lv_screen_active());
+  lv_obj_add_event_cb(slide, event_handler_slide, LV_EVENT_VALUE_CHANGED, NULL);
+  lv_obj_align(slide, LV_ALIGN_CENTER, 0, 100);
+  lv_obj_set_width(slide, 200);
+  lv_slider_set_range(slide, 0, 1000);
+  
 }
-
-
 
 #ifdef ARDUINO
 
@@ -69,8 +86,6 @@ void mySetup()
   pinMode(PULSE, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(ENABLE, OUTPUT);
-  digitalWrite(ENABLE, LOW);
-  digitalWrite(DIR, HIGH);
   // Initialisations générales
   testLvgl();
 
@@ -78,30 +93,42 @@ void mySetup()
 
 void loop()
 {
-  
-  // digitalWrite(PULSE,HIGH);
-  // delayMicroseconds(500);
-  // digitalWrite(PULSE, LOW);
-  // delayMicroseconds(500);
-
   // Inactif (pour mise en veille du processeur)
 }
 
 void myTask(void *pvParameters)
 {
   // Init
+  int etat = 0;
   TickType_t xLastWakeTime;
   // Lecture du nombre de ticks quand la tâche débute
   xLastWakeTime = xTaskGetTickCount();
-  int etat = 0;
   while (1)
   {
     // Loop
-    digitalWrite(PULSE,etat);
-    etat = !etat;
+    if(etat_moteur == 1)
+    {
+      digitalWrite(ENABLE, LOW);
+      digitalWrite(PULSE, etat);
+      digitalWrite(DIR, HIGH);
+          etat = !etat;
+
+    }
+    else if(etat_moteur == 2)
+    {
+      digitalWrite(ENABLE, LOW);
+      digitalWrite(PULSE, etat);
+      digitalWrite(DIR, LOW);
+          etat = !etat;
+
+    }
+    else{
+      digitalWrite(ENABLE, HIGH);
+      digitalWrite(PULSE, LOW);
+    }
     // Endort la tâche pendant le temps restant par rapport au réveil,
     // ici 200ms, donc la tâche s'effectue toutes les 200ms
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(500)); // toutes les 200 ms
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(val_slide)); // toutes les 200 ms
   }
 }
 
