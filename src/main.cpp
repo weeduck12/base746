@@ -6,27 +6,27 @@
 
 volatile int etat_moteur = 0;
 int val_slide = 200;
+
  void event_handler_btn1(lv_event_t * e)
 {
-    lv_obj_t * btn = (lv_obj_t *)lv_event_get_target(e);
-
-    if(lv_obj_has_state(btn, LV_STATE_CHECKED)) {
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_CLICKED) {
       etat_moteur = 1;
-
-    }
-    else{
-      etat_moteur = 0;
     }
 }
 
- void event_handler_btn2(lv_event_t * e)
+void event_handler_btn2(lv_event_t * e)
 {
-    lv_obj_t * btn = (lv_obj_t *)lv_event_get_target(e);
-
-    if(lv_obj_has_state(btn, LV_STATE_CHECKED)) {
-        etat_moteur = 2; // Sens antihoraire
-    } else {
-        etat_moteur = 0; // Stop si décoché
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_CLICKED) {
+      etat_moteur = 2;
+    }
+}
+ void event_handler_btnstop(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_CLICKED) {
+      etat_moteur = 0;
     }
 }
 
@@ -43,8 +43,7 @@ void testLvgl()
   // bouton 1 
   lv_obj_t * btn1 = lv_button_create(lv_screen_active());
   lv_obj_add_event_cb(btn1, event_handler_btn1, LV_EVENT_CLICKED, NULL);
-  lv_obj_align(btn1, LV_ALIGN_CENTER, 0, -70);
-  lv_obj_add_flag(btn1, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_align(btn1, LV_ALIGN_DEFAULT, 10, 50);
   lv_obj_set_height(btn1, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn1);
@@ -54,22 +53,34 @@ void testLvgl()
   // bouton 2
   lv_obj_t * btn2 = lv_button_create(lv_screen_active());
   lv_obj_add_event_cb(btn2, event_handler_btn2, LV_EVENT_CLICKED, NULL);
-  lv_obj_align(btn2, LV_ALIGN_CENTER, 0, 30);
-  lv_obj_add_flag(btn2, LV_OBJ_FLAG_CHECKABLE);
+  lv_obj_align(btn2, LV_ALIGN_DEFAULT, 10, 100);
   lv_obj_set_height(btn2, LV_SIZE_CONTENT);
 
   label = lv_label_create(btn2);
   lv_label_set_text(label, "Sens horaire");
   lv_obj_center(label);
 
+  // bouton stop
+  lv_obj_t * btnstop = lv_button_create(lv_screen_active());
+  lv_obj_add_event_cb(btnstop, event_handler_btnstop, LV_EVENT_CLICKED, NULL);
+  lv_obj_align(btnstop, LV_ALIGN_DEFAULT, 10, 150);
+  lv_obj_set_height(btnstop, LV_SIZE_CONTENT);
+
+  label = lv_label_create(btnstop);
+  lv_label_set_text(label, "Stop");
+  lv_obj_center(label);
   //slider
   
   lv_obj_t * slide = lv_slider_create(lv_screen_active());
   lv_obj_add_event_cb(slide, event_handler_slide, LV_EVENT_VALUE_CHANGED, NULL);
-  lv_obj_align(slide, LV_ALIGN_CENTER, 0, 100);
+  lv_obj_align(slide, LV_ALIGN_DEFAULT, 10, 200);
   lv_obj_set_width(slide, 200);
   lv_slider_set_range(slide, 0, 1000);
-  
+  //cercle
+  lv_obj_t * cercle = lv_btn_create(lv_scr_act());
+  lv_obj_set_size(cercle, 200, 200);
+  lv_obj_set_style_radius(cercle, LV_RADIUS_CIRCLE, 0);
+  lv_obj_align(cercle,LV_ALIGN_DEFAULT,270,50);
 }
 
 #ifdef ARDUINO
@@ -122,10 +133,16 @@ void myTask(void *pvParameters)
           etat = !etat;
 
     }
+    else if(etat_moteur == 0){
+      digitalWrite(ENABLE, HIGH);
+      digitalWrite(PULSE, LOW);
+    }
     else{
       digitalWrite(ENABLE, HIGH);
       digitalWrite(PULSE, LOW);
     }
+
+
     // Endort la tâche pendant le temps restant par rapport au réveil,
     // ici 200ms, donc la tâche s'effectue toutes les 200ms
     vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(val_slide)); // toutes les 200 ms
