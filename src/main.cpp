@@ -5,7 +5,9 @@
 #define ENABLE 5
 
 volatile int etat_moteur = 0;
-int val_slide = 200;
+int val_slide = 0;
+volatile long position = 0;
+volatile bool is_homed = 0;
 
  void event_handler_btn1(lv_event_t * e)
 {
@@ -33,7 +35,7 @@ void event_handler_btn2(lv_event_t * e)
 void event_handler_slide(lv_event_t * e)
 {
     lv_obj_t * slide = (lv_obj_t *)lv_event_get_target(e);
-    val_slide = lv_slider_get_value(slide) + 200;
+    val_slide = lv_slider_get_value(slide);
 }
 
 void testLvgl()
@@ -69,14 +71,15 @@ void testLvgl()
   label = lv_label_create(btnstop);
   lv_label_set_text(label, "Stop");
   lv_obj_center(label);
-  //slider
+  // slider
   
   lv_obj_t * slide = lv_slider_create(lv_screen_active());
   lv_obj_add_event_cb(slide, event_handler_slide, LV_EVENT_VALUE_CHANGED, NULL);
-  lv_obj_align(slide, LV_ALIGN_DEFAULT, 10, 200);
+  lv_obj_align(slide, LV_ALIGN_DEFAULT, 30, 230);
   lv_obj_set_width(slide, 200);
   lv_slider_set_range(slide, 0, 1000);
-  //cercle
+
+  // cercle
   lv_obj_t * cercle = lv_btn_create(lv_scr_act());
   lv_obj_set_size(cercle, 200, 200);
   lv_obj_set_style_radius(cercle, LV_RADIUS_CIRCLE, 0);
@@ -99,7 +102,7 @@ void mySetup()
   pinMode(ENABLE, OUTPUT);
   // Initialisations générales
   testLvgl();
-
+  
 }
 
 void loop()
@@ -123,7 +126,6 @@ void myTask(void *pvParameters)
       digitalWrite(PULSE, etat);
       digitalWrite(DIR, HIGH);
           etat = !etat;
-
     }
     else if(etat_moteur == 2)
     {
@@ -131,21 +133,12 @@ void myTask(void *pvParameters)
       digitalWrite(PULSE, etat);
       digitalWrite(DIR, LOW);
           etat = !etat;
-
-    }
-    else if(etat_moteur == 0){
-      digitalWrite(ENABLE, HIGH);
-      digitalWrite(PULSE, LOW);
     }
     else{
       digitalWrite(ENABLE, HIGH);
       digitalWrite(PULSE, LOW);
     }
-
-
-    // Endort la tâche pendant le temps restant par rapport au réveil,
-    // ici 200ms, donc la tâche s'effectue toutes les 200ms
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(val_slide)); // toutes les 200 ms
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10 + val_slide)); 
   }
 }
 
