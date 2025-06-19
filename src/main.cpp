@@ -3,7 +3,7 @@
 #define PULSE  8
 #define DIR 6 
 #define ENABLE 5
-
+//variables globales initialisatiosn
 volatile int etat_moteur = 0;
 int val_slide = 0;
 volatile long position = 0;
@@ -11,7 +11,7 @@ volatile bool is_homed = false;
 volatile bool is_homing = false;
 volatile long target_position = 0;
 volatile bool is_going_to_target = false;
-
+//gestion des evenements
 lv_obj_t * cercle_arc;
 
  void event_handler_btn1(lv_event_t * e)
@@ -55,7 +55,6 @@ void event_handler_go_home(lv_event_t * e)
     }
 }
 
-// New event handler for arc value change
 void event_handler_arc_changed(lv_event_t * e)
 {
     lv_obj_t * arc = (lv_obj_t *)lv_event_get_target(e);
@@ -64,11 +63,11 @@ void event_handler_arc_changed(lv_event_t * e)
         if (!is_homing && is_homed) {
             target_position = lv_arc_get_value(arc);
             is_going_to_target = true;
-            etat_moteur = 0; // Stop any current manual movement
+            etat_moteur = 0; 
         }
     }
 }
-
+//declaration des objets et leur parametres
 void testLvgl()
 {
   // Initialisations générales
@@ -110,7 +109,7 @@ void testLvgl()
   lv_obj_set_width(slide, 200);
   lv_slider_set_range(slide, 0, 1000);
 
-  // cercle (now lv_arc for visual feedback and potential control)
+  // cercle 
   cercle_arc = lv_arc_create(lv_screen_active());
   lv_obj_set_size(cercle_arc, 200, 200);
   lv_obj_align(cercle_arc,LV_ALIGN_DEFAULT,270,50);
@@ -119,12 +118,11 @@ void testLvgl()
   lv_arc_set_bg_angles(cercle_arc, 0, 360);
   lv_obj_add_event_cb(cercle_arc, event_handler_arc_changed, LV_EVENT_VALUE_CHANGED, NULL);
 
-  // Style the arc and indicator
   lv_obj_set_style_arc_width(cercle_arc, 10, LV_PART_MAIN);
   lv_obj_set_style_arc_width(cercle_arc, 10, LV_PART_INDICATOR);
   lv_obj_set_style_arc_color(cercle_arc, lv_color_make(0x00, 0x00, 0xFF), LV_PART_INDICATOR);
   
-  // Add a "Go Home" button on the arc
+  // Add bouton pour retourner pos home
   lv_obj_t * go_home_btn = lv_button_create(cercle_arc);
   lv_obj_set_size(go_home_btn, 80, 40);
   lv_obj_center(go_home_btn);
@@ -145,7 +143,7 @@ void testLvgl()
 void mySetup()
 {
   // à décommenter pour tester la démo
-  // lv_demo_widgets();
+  // settings des pins du tb
   pinMode(PULSE, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(ENABLE, OUTPUT);
@@ -170,46 +168,46 @@ void myTask(void *pvParameters)
   // Homing sequence
   if (!is_homed) {
     is_homing = true;
-    // Rotate for 4 seconds at full speed
-    for (int i = 0; i < 400; i++) { // 400 iterations * 10ms = 4 seconds (assuming 10ms delay = 1 pulse)
+    // Tourne pendant 4 secondes
+    for (int i = 0; i < 400; i++) { // 400 * 10ms = 4 seconds 
       digitalWrite(ENABLE, LOW);
       digitalWrite(PULSE, etat);
-      digitalWrite(DIR, HIGH); // Assuming HIGH for initial homing direction (Sens antihoraire, decreases position)
+      digitalWrite(DIR, HIGH); 
       etat = !etat;
       vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(10));
     }
     is_homing = false;
     is_homed = true;
-    position = 0; // Reset position counter after homing
+    position = 0; // Reset de la pos apres homing
   }
 
   while (1)
   {
-    if (!is_homing) { // Only allow control if homing is complete
+    if (!is_homing) { // seulement si homing effectué
       if (is_going_to_target) {
-        digitalWrite(ENABLE, LOW); // Enable motor for movement
+        digitalWrite(ENABLE, LOW); 
         if (position != target_position) {
           if (position < target_position) {
-            digitalWrite(DIR, LOW); // Move clockwise to increase position
+            digitalWrite(DIR, LOW); 
             position++;
-          } else { // position > target_position
-            digitalWrite(DIR, HIGH); // Move counter-clockwise to decrease position
+          } else { 
+            digitalWrite(DIR, HIGH); 
             position--;
           }
           digitalWrite(PULSE, etat);
           etat = !etat;
         } else {
-          is_going_to_target = false; // Reached target
-          digitalWrite(ENABLE, HIGH); // Disable motor
+          is_going_to_target = false; 
+          digitalWrite(ENABLE, HIGH); 
         }
-      } else { // Manual control via buttons
+      } else { /
         if(etat_moteur == 1) // Sens antihoraire
         {
           digitalWrite(ENABLE, LOW);
           digitalWrite(PULSE, etat);
           digitalWrite(DIR, HIGH);
           etat = !etat;
-          position--; // Decrement position for "Sens antihoraire" (counter-clockwise)
+          position--; //  Sens antihoraire
         }
         else if(etat_moteur == 2) // Sens horaire
         {
@@ -217,7 +215,7 @@ void myTask(void *pvParameters)
           digitalWrite(PULSE, etat);
           digitalWrite(DIR, LOW);
           etat = !etat;
-          position++; // Increment position for "Sens horaire" (clockwise)
+          position++; // Incremente "Sens horaire
         }
         else{
           digitalWrite(ENABLE, HIGH);
@@ -226,9 +224,8 @@ void myTask(void *pvParameters)
       }
     }
     
-    // Update the arc display based on current motor position
-    if (cercle_arc != NULL) { // Ensure arc object exists
-        // Normalize position to be within 0-399 for display on arc, handling negative values
+    // Mise a jour de l'arc de cercle
+    if (cercle_arc != NULL) { // gestion erreur
         lv_arc_set_value(cercle_arc, (position % 400 + 400) % 400); 
     }
 
